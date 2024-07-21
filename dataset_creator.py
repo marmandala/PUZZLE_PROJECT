@@ -4,6 +4,7 @@ from PIL import Image
 import numpy as np
 from tqdm import tqdm
 import matplotlib.pyplot as plt
+import downloader
 
 
 class ImagePairsViewer:
@@ -106,7 +107,7 @@ def get_image_paths_from_directory(directory, extensions=['.jpg', '.jpeg', '.png
     return image_paths
 
 
-def create_dataset_from_directory(directory, rows=10, cols=10, output_dir='dataset', num_negative_samples=810):
+def create_dataset_from_directory(directory, rows=5, cols=5, output_dir='dataset', num_negative_samples=20000):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -116,7 +117,7 @@ def create_dataset_from_directory(directory, rows=10, cols=10, output_dir='datas
 
     piece_index = 0  # Общий индекс для кусков изображений
 
-    for image_path in image_paths:
+    for image_path in tqdm(image_paths, desc='Processing images'):
         pieces = split_image(image_path, rows, cols)
         piece_paths = save_pieces(pieces, output_dir, start_index=piece_index)
         piece_index += len(pieces)  # Обновляем общий индекс
@@ -128,21 +129,67 @@ def create_dataset_from_directory(directory, rows=10, cols=10, output_dir='datas
                 idx2 = i * cols + j + 1
                 pairs.append((piece_paths[idx1], piece_paths[idx2], 1))
 
-    for _ in range(num_negative_samples):
+    for _ in tqdm(range(num_negative_samples), desc='Generating negative pairs'):
         piece1_path, piece2_path = random.sample(all_piece_paths, 2)
         pairs.append((piece1_path, piece2_path, 0))
 
     pairs_file_path = os.path.join(output_dir, 'pairs.txt')
     with open(pairs_file_path, 'w') as f:
-        for pair in tqdm(pairs):
+        for pair in tqdm(pairs, desc='Writing pairs to file'):
             piece1_path, piece2_path, label = pair
             f.write(f'{piece1_path} {piece2_path} {label}\n')
 
     return pairs
 
 
+queries = [
+    "Beautiful nature landscapes",
+    "City architecture at night",
+    "Pets playing",
+    "Delicious dishes on plate",
+    "Street art and graffiti",
+    "Sports events in motion",
+    "Cars in motion",
+    "People in traditional costumes",
+    "Exotic animals in zoo",
+    "Underwater world and fish",
+    "Astronomical objects and stars",
+    "Birds in flight",
+    "Ancient ruins and artifacts",
+    "Models on runway",
+    "Aerial views and drones",
+    "People working in office",
+    "Children playing on playground",
+    "Fruits and vegetables at market",
+    "Dance and ballet",
+    "Music concerts and performances",
+    "Mountain hiking trails",
+    "Winter sports activities",
+    "Sunset over the ocean",
+    "Historical landmarks",
+    "Famous bridges around the world",
+    "Camping and outdoor adventures",
+    "Farm animals in field",
+    "City parks and gardens",
+    "People at the beach",
+    "Local markets and bazaars",
+    "Colorful street markets",
+    "Desert landscapes",
+    "Lakes and rivers",
+    "Forest wildlife",
+    "Cultural festivals and parades",
+    "Train stations and railways",
+    "People riding bicycles",
+    "Skyscrapers and tall buildings",
+    "Fishing boats and harbors",
+    "Wind turbines and renewable energy",
+    "Rainforests and jungles"
+]
+
+# downloader.download_main(queries=queries, limit=20, output_directory="downloads")
+
 directory = 'downloads/data'
 pairs = create_dataset_from_directory(directory)
 
-viewer = ImagePairsViewer(pairs, num_positive_samples=10, num_negative_samples=10)
+viewer = ImagePairsViewer(pairs, num_positive_samples=40, num_negative_samples=40, add_separator=False)
 plt.show()

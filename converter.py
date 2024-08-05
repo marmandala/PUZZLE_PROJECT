@@ -27,7 +27,7 @@ def convert_images_to_png(directory):
 
                     img_gray = img_cropped.convert("L")
 
-                    img_gray.save(os.path.join(directory, f"{filename}.png"), format="PNG")
+                    img_cropped.save(os.path.join(directory, f"{filename}.png"), format="PNG")
                     print(f"Файл '{file}' успешно конвертирован и преобразован в PNG и градации серого.")
 
                 os.remove(file_path)

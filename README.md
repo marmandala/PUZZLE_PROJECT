@@ -1,4 +1,4 @@
 # PUZZLE PROJECT
 
-## Картинка
+## Пример работы
 ![Пример](example.jpg)
